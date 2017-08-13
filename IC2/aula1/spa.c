@@ -15,15 +15,15 @@ typedef struct s_guests
     char *nome;
 } Guests;
 
-Guests** create_fichas(void) {
+Guests**  create_fichas(void) {
     Guests **fichas = malloc(sizeof(Guests));
-    return fichas;
+    return fichas /*@null@*/;
 }
 
 bool all_discharged(Guests **fichas, int *i) {
     bool not_discharged = false;
     for (int j = 0; j < *i; ++j) {
-	if (fichas[j]->alta == false) {
+	if (!fichas[j]->alta) {
 	    not_discharged = true;
 	}
     }
@@ -89,8 +89,10 @@ int discharge(Guests **fichas, int *i) {
 		    *fichas[get_pos(fichas, i, &n)]->alta = true;
 		    printf("Entre o peso de saída (g) de %s, hóspedede número %d, ficha %llu: ",
 			   fichas[get_pos(fichas, i, &n)]->nome, get_pos(fichas, i, &n) + 1, n);
+		    fichas[get_pos(fichas, i, &n)]->peso_final = malloc(sizeof(ld));
 		    scanf(" %Lf", &fichas[get_pos(fichas, i, &n)]->peso_final);
 		    printf("\n");
+		    fichas[get_pos(fichas, i, &n)]->peso_perdido = malloc(sizeof(ld));
 		    *fichas[get_pos(fichas, i, &n)]->peso_perdido = ((fichas[get_pos(fichas, i, &n)]->peso_inicial - fichas[get_pos(fichas, i, &n)]->peso_final) / 1000.0);
 		    if (*fichas[get_pos(fichas, i, &n)]->peso_perdido > 0) {
 			printf("%s, hóspede de número %d, ficha %llu, perdeu %Lfkg em %hi dias de tratamento no Spa.\n\n",
@@ -117,8 +119,10 @@ int discharge(Guests **fichas, int *i) {
 		    *fichas[n - 1]->alta = true;
 		    printf("Entre o peso de saída (g) de %s, hóspede de número %llu, ficha %llu: ",
 			   fichas[n - 1]->nome, n, fichas[n - 1]->numero_ficha);
+		    fichas[n - 1]->peso_final = malloc(sizeof(ld));
 		    scanf(" %Lf", &fichas[n - 1]->peso_final);
 		    printf("\n");
+		    fichas[n - 1]->peso_perdido = malloc(sizeof(ld));
 		    *fichas[n - 1]->peso_perdido = ((fichas[n - 1]->peso_inicial - fichas[n - 1]->peso_final) / 1000.0);
 		    if (*fichas[n - 1]->peso_perdido > 0) {
 			printf("%s, hóspede de número %llu, ficha %llu, perdeu %Lfkg em %hi dias de tratamento no Spa.\n\n",
@@ -159,9 +163,6 @@ int discharge(Guests **fichas, int *i) {
 
 int add_guest(Guests **fichas, int *i, int (*main)(void), int (*discharge)(Guests **, int *)) {
     char command;
-    fichas = (Guests **)realloc(fichas, sizeof(Guests*) * (*i + 1));
-    fichas[*i] = (Guests *)malloc(sizeof(Guests));
-    fichas[*i]->alta = false;
     while (true) {
 	if (*i == 20) {
 	    printf("Número máximo de hóspedes(%d) atingido.\n", *i);
@@ -191,9 +192,17 @@ int add_guest(Guests **fichas, int *i, int (*main)(void), int (*discharge)(Guest
 	    }
 	}
 	else {
+	    fichas = (Guests **)realloc(fichas, sizeof(Guests*) * (*i + 1));
+	    fichas[*i] = (Guests *)malloc(sizeof(Guests));
+	    fichas[*i]->alta = malloc(sizeof(bool));
+	    fichas[*i]->alta = false;
+	    fichas[*i]->qtd_dias = malloc(sizeof(short));
+	    fichas[*i]->numero_ficha = malloc(sizeof(ull));
+	    fichas[*i]->peso_inicial = malloc(sizeof(ld));
+	    fichas[*i]->nome = malloc(sizeof(char) * MAX_LENGTH);
 	    printf("Entre o número da ficha do(a) hóspede de número %d: ", *i + 1);
 	    scanf(" %llu", &fichas[*i]->numero_ficha);
-	    printf("\nEntre o nome do hóspede de número %d, ficha %llu: ", *i + 1, fichas[*i]->numero_ficha);
+	    printf("Entre o nome do hóspede de número %d, ficha %llu: ", *i + 1, fichas[*i]->numero_ficha);
 	    fgets(fichas[*i]->nome, MAX_LENGTH, stdin);
 	    // Remove trailing newline , if there
 	    if ((strlen(fichas[*i]->nome) > 0) && (fichas[*i]->nome[strlen(fichas[*i]->nome) - 1] == '\n'))
@@ -204,17 +213,19 @@ int add_guest(Guests **fichas, int *i, int (*main)(void), int (*discharge)(Guest
 	    while (true) {
 		printf("\nEntre a quantidade de dias de tratamento de %s, hóspede de número %d, ficha %llu: ",
 		       fichas[*i]->nome, *i + 1, fichas[0]->numero_ficha);
-		scanf(" %hi", &fichas[*i]->qtd_dias);
+		scanf(" %hi", fichas[*i]->qtd_dias);
+		printf("%hi\n", fichas[*i]->qtd_dias);
 		if (*fichas[*i]->qtd_dias <= 30)
 		    break;
 		/* else */
 		/*     continue; */
 	    }
-	    fichas[*i]->calorias = malloc(sizeof(ld) * *fichas[*i]->qtd_dias);
+	    fichas[*i]->calorias = malloc(sizeof(ld *) * ( *fichas[*i]->qtd_dias));
 	    for (int j = 0; j < *fichas[*i]->qtd_dias; ++j) {
 		printf("\nEntre a quantidade de calorias que %s, hóspede de número %d, ficha %llu pode ",
 		       fichas[*i]->nome, *i + 1, fichas[*i]->numero_ficha);
 		printf("ingerir no %d dia de tratamento: ", j + 1);
+		fichas[*i]->calorias[j] = malloc(sizeof(ld));
 		scanf(" %Lf", &fichas[*i]->calorias[j]);
 	    }
 	}
@@ -232,6 +243,7 @@ int add_guest(Guests **fichas, int *i, int (*main)(void), int (*discharge)(Guest
 		/* else */
 		/*     continue; */
 	    }
+	    break;
 	}
     }
 }
@@ -254,7 +266,7 @@ int main(void) {
 	    add_guest(fichas, &index, mainPtr, dischargePtr);
 	else if (command == 'A' || command == 'a') {
 	    if (!*fichas) {
-		printf("Alerta!\nNenhuma ficha de hóspede foi preenchida ainda, portanto é imposspível dar alta ");
+		printf("\nAlerta!\nNenhuma ficha de hóspede foi preenchida ainda, portanto é imposspível dar alta ");
 		printf("para algum paciente.\n\n");
 	    }
 	    else
@@ -284,6 +296,13 @@ int main(void) {
 	    for (int i = 0; i < index; ++i) {
 		free(fichas[i]->nome);
 		for (int j = 0; j < *fichas[i]->qtd_dias; ++j) free(fichas[i]->calorias[j]);
+		free(fichas[i]->calorias);
+		free(fichas[i]->alta);
+		free(fichas[i]->qtd_dias);
+		free(fichas[i]->numero_ficha);
+		free(fichas[i]->peso_inicial);
+		free(fichas[i]->peso_final);
+		free(fichas[i]->peso_perdido);
 		free(fichas[i]);
 	    }
 	}
