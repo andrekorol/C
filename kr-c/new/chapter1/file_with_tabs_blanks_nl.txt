@@ -1,0 +1,7 @@
+This	is   a  file
+	with    	tabs
+	    blanks
+		and      	
+			    
+		new
+		    lines	
