@@ -1,0 +1,3 @@
+Line with trailing blanks
+Line with trailing tabs
+Line with trailing blanks and tabs

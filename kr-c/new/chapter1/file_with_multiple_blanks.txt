@@ -1,2 +1,2 @@
 This  is    a   file with
-   multiple   blanks.    
+   multiple   blanks.  
