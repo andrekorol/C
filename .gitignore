@@ -58,3 +58,6 @@ dkms.conf
 
 # VS Code Configuration
 .vscode
+
+# Python Virtual Environments
+venv/
